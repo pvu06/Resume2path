@@ -5,6 +5,8 @@ import { mentees, resumes, analyses } from '@/db/schema';
 import { and, eq, gte } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 import { parseFileToText } from '@/lib/parse';
+import connectDB from '@/lib/mongodb';
+import Resume from '@/models/Resume';
 
 
 export async function POST(req: Request) {
@@ -137,11 +139,38 @@ export async function POST(req: Request) {
       }
     };
 
-    // Insert analysis regardless (so users aren’t blocked on AI hiccups)
+    // Insert analysis regardless (so users aren't blocked on AI hiccups)
     const [a] = await db.insert(analyses).values({ 
       resumeId: r.id, 
       result: normalized
     }).returning();
+
+    // Also save to MongoDB
+    try {
+      await connectDB();
+      const mongoResume = new Resume({
+        userId: email, // Using email as userId for now
+        fileName: file.name,
+        fileType: file.type,
+        fileUrl: url,
+        fileSize: file.size,
+        textContent: text,
+        parsedData: {
+          parser: parseRes.parser,
+          pages: parseRes.pages,
+          textLength: textLen,
+          name: parseRes.name,
+          mime: parseRes.mime,
+          ext: parseRes.ext,
+          error: parseRes.error
+        },
+        analysisResult: normalized
+      });
+      await mongoResume.save();
+    } catch (mongoError) {
+      console.error('MongoDB save error (non-blocking):', mongoError);
+      // Don't fail the request if MongoDB save fails
+    }
 
     return NextResponse.json({ 
       analysisId: a.id,

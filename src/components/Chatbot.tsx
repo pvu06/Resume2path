@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { getUserIdentifier, getSessionId } from '@/lib/user-utils';
 
 interface Message {
   id: string;
@@ -14,6 +16,7 @@ interface Message {
 }
 
 export default function Chatbot() {
+  const [user, setUser] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -25,8 +28,17 @@ export default function Chatbot() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId] = useState(() => getSessionId());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Listen to auth state changes
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,6 +54,51 @@ export default function Chatbot() {
     }
   }, [isOpen]);
 
+  // Load chat history when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      loadChatHistory();
+    }
+  }, [user]);
+
+  const loadChatHistory = async () => {
+    const userId = getUserIdentifier(user);
+    if (!userId) return;
+    
+    try {
+      const response = await fetch(`/api/chat?userId=${encodeURIComponent(userId)}&sessionId=${sessionId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.messages && data.messages.length > 0) {
+          setMessages(data.messages);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
+
+  const saveMessage = async (message: Message) => {
+    const userId = getUserIdentifier(user);
+    if (!userId) return;
+    
+    try {
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          sessionId,
+          message
+        })
+      });
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isTyping) return;
 
@@ -53,11 +110,12 @@ export default function Chatbot() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    await saveMessage(userMessage);
     setInputValue('');
     setIsTyping(true);
 
     // Simulate AI response
-    setTimeout(() => {
+    setTimeout(async () => {
       const botResponses = [
         "That's a great question! Let me help you with that.",
         "I understand your concern. Here's what I recommend:",
@@ -76,6 +134,7 @@ export default function Chatbot() {
       };
 
       setMessages(prev => [...prev, botMessage]);
+      await saveMessage(botMessage);
       setIsTyping(false);
     }, 1500);
   };

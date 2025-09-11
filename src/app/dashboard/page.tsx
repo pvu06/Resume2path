@@ -6,11 +6,12 @@ import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { doc, setDoc, getDoc, collection, getDocs, query, orderBy } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import ResumeHistory from "@/components/ResumeHistory";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Mail, Target, FileText } from "lucide-react";
+import { Upload, Mail, Target, FileText, History } from "lucide-react";
 import { put } from "@vercel/blob";
 
 export default function Dashboard() {
@@ -186,8 +187,11 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen relative bg-navy-950">
       <Header />
-      <section className="min-h-screen flex items-center py-24 bg-ocean-900">
-        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="py-24 bg-ocean-900">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Upload Section */}
+            <div>
           <Card className="shadow-lg border-0 bg-ocean-800">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl flex items-center justify-center gap-2 text-white">
@@ -362,8 +366,28 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+            </div>
+
+            {/* Resume History Section */}
+            <div>
+              <Card className="shadow-lg border-0 bg-ocean-800">
+                <CardHeader>
+                  <CardTitle className="text-2xl flex items-center gap-2 text-white">
+                    <History className="h-6 w-6 text-ocean-300" />
+                    Resume History
+                  </CardTitle>
+                  <CardDescription className="text-ocean-200">
+                    View and manage your uploaded resumes
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResumeHistory />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
