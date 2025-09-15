@@ -30,9 +30,19 @@ const ChatHistorySchema = new Schema<IChatHistory>({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Update the updatedAt field before saving
+// Update the updatedAt field before saving and ensure timestamps are Date objects
 ChatHistorySchema.pre('save', function(next) {
   this.updatedAt = new Date();
+  
+  // Ensure all message timestamps are Date objects
+  if (this.messages && Array.isArray(this.messages)) {
+    this.messages.forEach(message => {
+      if (message.timestamp && typeof message.timestamp === 'string') {
+        message.timestamp = new Date(message.timestamp);
+      }
+    });
+  }
+  
   next();
 });
 

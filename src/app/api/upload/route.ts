@@ -148,6 +148,20 @@ export async function POST(req: Request) {
     // Also save to MongoDB
     try {
       await connectDB();
+      
+      // Sanitize the normalized data before saving
+      const sanitizedAnalysisResult = {
+        role: String(normalized.role || ''),
+        skills: Array.isArray(normalized.skills) ? normalized.skills.map(s => String(s).trim()).filter(s => s.length > 0) : [],
+        experience: Array.isArray(normalized.experience) ? normalized.experience : [],
+        summary: String(normalized.summary || ''),
+        gaps: Array.isArray(normalized.gaps) ? normalized.gaps.map(g => String(g).trim()).filter(g => g.length > 0) : [],
+        suggestions: Array.isArray(normalized.suggestions) ? normalized.suggestions.map(s => String(s).trim()).filter(s => s.length > 0) : [],
+        fit: typeof normalized.fit === 'number' ? normalized.fit : 0,
+        tracks: Array.isArray(normalized.tracks) ? normalized.tracks : [],
+        parse: normalized.parse || {}
+      };
+      
       const mongoResume = new Resume({
         userId: email, // Using email as userId for now
         fileName: file.name,
@@ -164,11 +178,18 @@ export async function POST(req: Request) {
           ext: parseRes.ext,
           error: parseRes.error
         },
-        analysisResult: normalized
+        analysisResult: sanitizedAnalysisResult
       });
+      
       await mongoResume.save();
+      console.log('✅ Resume saved to MongoDB successfully');
     } catch (mongoError) {
-      console.error('MongoDB save error (non-blocking):', mongoError);
+      console.error('❌ MongoDB save error (non-blocking):', mongoError);
+      console.error('Error details:', {
+        message: mongoError.message,
+        name: mongoError.name,
+        code: mongoError.code
+      });
       // Don't fail the request if MongoDB save fails
     }
 

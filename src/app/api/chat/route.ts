@@ -53,7 +53,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ messages: [] });
     }
 
-    return NextResponse.json({ messages: chatHistory.messages });
+    // Ensure timestamps are properly formatted
+    const messages = chatHistory.messages.map(message => ({
+      ...message.toObject(),
+      timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)
+    }));
+
+    return NextResponse.json({ messages });
   } catch (error) {
     console.error('Error fetching chat history:', error);
     return NextResponse.json({ error: 'Failed to fetch chat history' }, { status: 500 });

@@ -70,7 +70,12 @@ export default function Chatbot() {
       if (response.ok) {
         const data = await response.json();
         if (data.messages && data.messages.length > 0) {
-          setMessages(data.messages);
+          // Convert timestamp strings to Date objects
+          const messagesWithDates = data.messages.map((message: any) => ({
+            ...message,
+            timestamp: new Date(message.timestamp)
+          }));
+          setMessages(messagesWithDates);
         }
       }
     } catch (error) {
@@ -115,28 +120,51 @@ export default function Chatbot() {
     setIsTyping(true);
 
     // Simulate AI response
-    setTimeout(async () => {
-      const botResponses = [
-        "That's a great question! Let me help you with that.",
-        "I understand your concern. Here's what I recommend:",
-        "Based on your situation, I suggest the following approach:",
-        "That's an interesting point. Let me break this down for you:",
-        "I'm here to help! Here's what you should consider:"
-      ];
+    try {
+      const prompt = 'You are an AI career assistant specializing in resume writing, job search strategies, and career development. User question: ${inputValue} Please provide helpful, actionable advice that is professional but friendly, specific and practical, and under 200 words.';
+
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: prompt,
+          isChat: true
+        })
+      });
       
-      const randomResponse = botResponses[Math.floor(Math.random() * botResponses.length)];
-      
+      if (!response.ok){
+        throw new Error('AI API failed: ${response.status}');
+      }
+
+      const data = await response.json();
+
       const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: randomResponse,
-        sender: 'bot',
-        timestamp: new Date()
+        id : (Date.now() + 1).toString(),
+        text : data.result?.description || data.rawGeminiResponse || 'Sorry, I had trouble processing that.',
+        sender : 'bot',
+        timestamp : new Date()
       };
 
       setMessages(prev => [...prev, botMessage]);
       await saveMessage(botMessage);
+
+    } catch (error) {
+      console.error('AI API error:', error);
+
+      const errorMessage: Message = {
+        id : (Date.now() + 1).toString(),
+        text: 'Sorry, I\'m having trouble right now. Please try again later.',
+        sender : 'bot',
+        timestamp : new Date()
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+      await saveMessage(errorMessage);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -204,7 +232,7 @@ export default function Chatbot() {
                                             <p className={`text-xs mt-1 ${
                           message.sender === 'user' ? 'text-ocean-100' : 'text-gray-500'
                         }`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
