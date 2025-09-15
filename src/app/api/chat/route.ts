@@ -54,8 +54,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Ensure timestamps are properly formatted
-    const messages = chatHistory.messages.map(message => ({
-      ...message.toObject(),
+    const messages = chatHistory.messages.map((message : IChatMessage) => ({
+      id : message.id,
+      text : message.text,
+      sender : message.sender,
       timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)
     }));
 
