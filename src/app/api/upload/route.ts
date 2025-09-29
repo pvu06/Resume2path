@@ -186,9 +186,9 @@ export async function POST(req: Request) {
     } catch (mongoError) {
       console.error('❌ MongoDB save error (non-blocking):', mongoError);
       console.error('Error details:', {
-        message: mongoError.message,
-        name: mongoError.name,
-        code: mongoError.code
+        message: mongoError instanceof Error ? mongoError.message : 'Unknown error',
+        name: mongoError instanceof Error ? mongoError.name : 'Unknown',
+        code: (mongoError as any)?.code || 'Unknown'
       });
       // Don't fail the request if MongoDB save fails
     }
