@@ -8,6 +8,20 @@
       "when": 1756037088017,
       "tag": "0000_vengeful_randall",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1758859543685,
+      "tag": "0001_rainy_boomerang",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1759152416359,
+      "tag": "0002_late_lethal_legion",
+      "breakpoints": true
     }
   ]
 }

@@ -23,7 +23,7 @@ export const resumes = pgTable('resumes', {
   id: serial('id').primaryKey(),
   menteeId: integer('mentee_id').notNull(),
   fileUrl: text('file_url').notNull(),
-  fileType: varchar('file_type', { length: 40 }).notNull(),
+  fileType: varchar('file_type', { length: 255 }).notNull(),
   textContent: text('text_content'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

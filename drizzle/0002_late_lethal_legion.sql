@@ -1,0 +1,1 @@
+ALTER TABLE "resumes" ALTER COLUMN "file_type" SET DATA TYPE varchar(255);
