@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { CheckCircle, AlertCircle, ArrowRight, Target, Lightbulb, Calendar } from 'lucide-react';
+import { CheckCircle, AlertCircle, ArrowRight, Target, Lightbulb, Calendar, MessageSquare } from 'lucide-react';
+import Link from 'next/link';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 // import { doc, setDoc } from 'firebase/firestore';
@@ -135,6 +136,14 @@ export default function AnalysisPage() {
             <Badge className={`${getFitColor('unknown')} text-lg px-4 py-2`}>
               {fitScore != null ? `Fit: ${fitScore}/10` : 'Fit: N/A'}
             </Badge>
+          </div>
+          <div className="mt-6">
+            <Link href={`/annotate/${params.id}`}>
+              <Button className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 text-lg font-semibold">
+                <MessageSquare className="w-5 h-5 mr-2" />
+                Annotate Resume
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
