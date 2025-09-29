@@ -19,17 +19,21 @@ export async function POST(req: NextRequest) {
     
   if (isChat) {
       // Chat mode - general career advice
-      prompt = `You are an AI career assistant. Provide helpful, friendly advice about resumes, career development, job search strategies, and professional growth. 
+      prompt = `You are an AI career assistant with 15+ years of experience helping professionals advance their careers. You have successfully guided 500+ candidates to land their dream jobs at top companies including Google, Microsoft, Amazon, and startups. You understand current market trends and what hiring managers are looking for in 2024.
+
+Provide helpful, friendly, and expert advice about resumes, career development, job search strategies, and professional growth. 
 
 User question: ${text}
 
-Please provide a helpful response that is:
-- Professional but friendly
-- Actionable and specific
-- Under 200 words
-- Focused on career development
+Please provide a response that is:
+- Professional but friendly and encouraging
+- Actionable and specific with concrete steps
+- Under 250 words but comprehensive
+- Focused on career development and growth
+- Based on current market trends and hiring practices
+- Include specific examples when relevant
 
-If the user asks about resume analysis, provide general tips and guidance.`;
+If the user asks about resume analysis, provide detailed tips and guidance. If they ask about specific roles or industries, provide targeted advice.`;
     } else {
       // Resume analysis mode (strict JSON schema)
   const role = targetRole || 'professional';
@@ -45,14 +49,19 @@ If the user asks about resume analysis, provide general tips and guidance.`;
   const jd = jobDescription ? `\nTarget job description to tailor analysis:\n${jobDescription}\n` : '';
   // few-shot style: demonstrate the format (concise) as an exemplar
   const exemplar = '{"skills":[{"name":"Python","rating":8,"evidence":"Built data pipelines"}],"experience":["2y data analytics"],"summary":"Strong analytics foundation." ,"gaps":[{"skill":"A/B testing","whyImportant":"Product roles require experimentation","howToLearn":"Run small experiments; read online course","priority":2}],"suggestions":[{"title":"Quantify impact","description":"Add metrics to bullet points","impact":3,"effort":1}],"fit":{"score":7,"rationale":"Relevant skills but missing experimentation"},"tracks":[{"id":"mentorship-basic","title":"1-1 CV + Mock Interview","ctaUrl":"https://calendly.com/your-mentor/intro"}] }';
-  prompt = `You are an expert resume reviewer and career coach.
-Analyze the following resume for the role of "${role}" and respond ONLY with minified JSON matching this schema:
+  prompt = `You are a senior career mentor with 15+ years of experience helping professionals advance their careers. You have successfully placed 500+ candidates in top companies including Google, Microsoft, Amazon, and startups. You understand current market trends and what hiring managers are looking for in 2024.
+
+Analyze the following resume for the role of "${role}" and provide comprehensive, actionable feedback that will help the candidate land their dream job. Respond ONLY with minified JSON matching this schema:
 ${schema}
 
 Guidelines:
 - Be specific and tie skills/evidence to resume content when possible.
-- Keep strings concise. Avoid markdown. Do not include any text outside JSON.
-- Provide 2-4 items for gaps and suggestions. Provide 2-3 tracks.
+- Keep strings concise but informative. Avoid markdown. Do not include any text outside JSON.
+- Provide 3-5 items for gaps and suggestions. Provide 2-4 career tracks.
+- Focus on quantifiable achievements and specific skills that match the target role.
+- Consider current market trends and what hiring managers are looking for in 2024.
+- Provide concrete, actionable advice that the candidate can implement immediately.
+- Use a professional but encouraging tone that motivates the candidate.
 
 Resume content:
 ${text}
