@@ -9,6 +9,7 @@ import connectDB from '@/lib/mongodb';
 import Resume from '@/models/Resume';
 import { sendAnalysisEmail, sendWelcomeEmail } from '@/lib/email';
 import { analytics } from '@/lib/analytics';
+import { subscriptions, usage } from '@/db/schema';
 
 
 export async function POST(req: Request) {
@@ -26,18 +27,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing file or email' }, { status: 400 });
     }
 
-    // Enforce monthly quota (5 analyses/month)
-    const existingMentee = (await db.select().from(mentees).where(eq(mentees.email, email)).limit(1)).at(0);
-    if (existingMentee) {
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const countRows = await db
-        .select({ id: analyses.id })
-        .from(analyses)
-        .innerJoin(resumes, eq(analyses.resumeId, resumes.id))
-        .where(and(eq(resumes.menteeId, existingMentee.id), gte(analyses.createdAt, startOfMonth)));
-      if (countRows.length >= 5) {
-        return NextResponse.json({ error: 'Monthly limit reached. You have used all 5 free analyses for this month.' }, { status: 403 });
+    // Check subscription and usage limits
+    const subscriptionResponse = await fetch(`${new URL(req.url).origin}/api/subscription?email=${encodeURIComponent(email)}`);
+    if (subscriptionResponse.ok) {
+      const { subscription, usage: usageData } = await subscriptionResponse.json();
+      
+      // Check if user has reached their limit
+      if (subscription.status !== 'premium' && usageData.analysesCount >= usageData.limit) {
+        return NextResponse.json({ 
+          error: 'Monthly limit reached. Upgrade to Premium for unlimited analyses.',
+          upgradeRequired: true,
+          currentUsage: usageData.analysesCount,
+          limit: usageData.limit
+        }, { status: 403 });
       }
     }
 
@@ -167,6 +169,37 @@ export async function POST(req: Request) {
     // Track analysis completion
     const analysisScore = normalized?.fit?.score || 0;
     analytics.trackAnalysisComplete(analysisScore, targetRole || 'General', email);
+    
+    // Update usage count
+    try {
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+      const existingUsage = await db
+        .select()
+        .from(usage)
+        .where(and(eq(usage.userId, email), eq(usage.month, currentMonth)))
+        .limit(1);
+      
+      if (existingUsage.length > 0) {
+        await db
+          .update(usage)
+          .set({ 
+            analysesCount: existingUsage[0].analysesCount + 1,
+            updatedAt: new Date()
+          })
+          .where(eq(usage.id, existingUsage[0].id));
+      } else {
+        await db
+          .insert(usage)
+          .values({
+            userId: email,
+            month: currentMonth,
+            analysesCount: 1
+          });
+      }
+    } catch (usageError) {
+      console.error('❌ Usage tracking error (non-blocking):', usageError);
+      // Don't fail the request if usage tracking fails
+    }
 
     // Also save to MongoDB
     try {

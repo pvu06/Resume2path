@@ -35,3 +35,24 @@ export const analyses = pgTable('analyses', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const subscriptions = pgTable('subscriptions', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }).notNull(),
+  stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
+  stripeSubscriptionId: varchar('stripe_subscription_id', { length: 255 }),
+  status: varchar('status', { length: 50 }).notNull(), // 'free', 'premium', 'cancelled'
+  currentPeriodEnd: timestamp('current_period_end'),
+  cancelAtPeriodEnd: varchar('cancel_at_period_end', { length: 10 }).default('false'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const usage = pgTable('usage', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }).notNull(),
+  month: varchar('month', { length: 7 }).notNull(), // YYYY-MM format
+  analysesCount: integer('analyses_count').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
