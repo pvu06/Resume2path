@@ -10,6 +10,7 @@ import Resume from '@/models/Resume';
 import { sendAnalysisEmail, sendWelcomeEmail } from '@/lib/email';
 import { analytics } from '@/lib/analytics';
 import { subscriptions, usage } from '@/db/schema';
+import { queueResumeAnalysis, queueWelcomeEmail } from '@/lib/queue';
 
 
 export async function POST(req: Request) {
@@ -79,16 +80,16 @@ export async function POST(req: Request) {
         .returning();
       menteeId = m.id;
       
-      // Send welcome email for new users
-      if (email && name) {
-        try {
-          await sendWelcomeEmail(email, name);
-          console.log('✅ Welcome email sent to new user');
-        } catch (welcomeEmailError) {
-          console.error('❌ Welcome email error (non-blocking):', welcomeEmailError);
-          // Don't fail the request if welcome email fails
-        }
-      }
+            // Queue welcome email for new users
+            if (email && name) {
+              try {
+                await queueWelcomeEmail(email, name);
+                console.log('✅ Welcome email queued for new user');
+              } catch (welcomeEmailError) {
+                console.error('❌ Welcome email queue error (non-blocking):', welcomeEmailError);
+                // Don't fail the request if welcome email fails
+              }
+            }
       
       // Track user registration
       analytics.trackUserRegistration(email);
@@ -101,29 +102,26 @@ export async function POST(req: Request) {
     analytics.trackResumeUpload(targetRole || 'General', email);
 
     // Use Gemini AI for analysis (graceful fallback if it fails)
-    const origin = new URL(req.url).origin;
-    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')) || origin;
-    let finalResult: any;
-    try {
-    const geminiResponse = await fetch(`${baseUrl}/api/gemini`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-      text: text.slice(0, 14000),
-          targetRole: targetRole || 'General',
-          jobDescription: jobDescription || undefined
-        })
-      });
-      if (geminiResponse.ok) {
-        const geminiData = await geminiResponse.json();
-        finalResult = geminiData.result;
-      } else {
-        const msg = await geminiResponse.text();
-        console.error('Gemini call failed:', geminiResponse.status, msg);
-      }
-    } catch (e) {
-      console.error('Gemini request error:', e);
-    }
+    // Queue resume analysis for background processing
+    const analysisJob = await queueResumeAnalysis({
+      resumeId: r.id,
+      fileUrl: url,
+      textContent: text,
+      targetRole: targetRole || 'General',
+      email: email,
+      name: name || 'User'
+    });
+
+    // For now, return a placeholder result
+    // The actual analysis will be processed in the background
+    let finalResult: any = {
+      summary: "Analysis in progress... You'll receive an email when complete.",
+      skills: [],
+      gaps: [],
+      suggestions: [],
+      fit: { score: 0, rationale: "Analysis pending" },
+      tracks: []
+    };
 
     // Normalize or fallback
     const normalized = finalResult ? {

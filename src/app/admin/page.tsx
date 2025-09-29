@@ -18,6 +18,7 @@ import {
   Settings
 } from 'lucide-react';
 import Header from '@/components/Header';
+import QueueMonitor from '@/components/QueueMonitor';
 
 interface AdminStats {
   totalUsers: number;
@@ -173,12 +174,18 @@ export default function AdminDashboard() {
               </Card>
             </div>
 
+            {/* Queue Monitor */}
+            <div className="mb-8">
+              <QueueMonitor />
+            </div>
+
             {/* Detailed Tabs */}
             <Tabs defaultValue="users" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="users">Users</TabsTrigger>
                 <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="queue">Queue</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
@@ -288,6 +295,10 @@ export default function AdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="queue" className="space-y-4">
+                <QueueMonitor />
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-4">
