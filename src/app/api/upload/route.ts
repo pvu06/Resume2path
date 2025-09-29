@@ -8,6 +8,7 @@ import { parseFileToText } from '@/lib/parse';
 import connectDB from '@/lib/mongodb';
 import Resume from '@/models/Resume';
 import { sendAnalysisEmail, sendWelcomeEmail } from '@/lib/email';
+import { analytics } from '@/lib/analytics';
 
 
 export async function POST(req: Request) {
@@ -86,10 +87,16 @@ export async function POST(req: Request) {
           // Don't fail the request if welcome email fails
         }
       }
+      
+      // Track user registration
+      analytics.trackUserRegistration(email);
     }
     
     // Insert resume
     const [r] = await db.insert(resumes).values({ menteeId, fileUrl: url, fileType: file.type, textContent: text }).returning();
+    
+    // Track resume upload
+    analytics.trackResumeUpload(targetRole || 'General', email);
 
     // Use Gemini AI for analysis (graceful fallback if it fails)
     const origin = new URL(req.url).origin;
@@ -156,6 +163,10 @@ export async function POST(req: Request) {
       resumeId: r.id, 
       result: normalized
     }).returning();
+    
+    // Track analysis completion
+    const analysisScore = normalized?.fit?.score || 0;
+    analytics.trackAnalysisComplete(analysisScore, targetRole || 'General', email);
 
     // Also save to MongoDB
     try {

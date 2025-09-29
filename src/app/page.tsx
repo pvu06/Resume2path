@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Upload, FileText, User, Mail, Target, ArrowRight, Sparkles, CheckCircle
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Chatbot from '@/components/Chatbot';
+import { analytics } from '@/lib/analytics';
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +25,11 @@ export default function HomePage() {
   const [customRole, setCustomRole] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const router = useRouter();
+
+  // Track page view
+  useEffect(() => {
+    analytics.trackPageView('home');
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
