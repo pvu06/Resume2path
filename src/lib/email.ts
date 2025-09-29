@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export interface EmailData {
   to: string;
@@ -18,7 +18,7 @@ export async function sendAnalysisEmail({
   targetRole
 }: EmailData) {
   try {
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.log('📧 Resend API key not configured, skipping email');
       return { success: false, error: 'Email not configured' };
     }
@@ -112,7 +112,7 @@ export async function sendAnalysisEmail({
 
 export async function sendWelcomeEmail(to: string, userName: string) {
   try {
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.log('📧 Resend API key not configured, skipping welcome email');
       return { success: false, error: 'Email not configured' };
     }

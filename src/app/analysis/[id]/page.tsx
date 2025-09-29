@@ -7,9 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { CheckCircle, AlertCircle, ArrowRight, Target, Lightbulb, Calendar } from 'lucide-react';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+// import { doc, setDoc } from 'firebase/firestore';
 
 type AnalysisResult = any;
 
@@ -59,17 +59,17 @@ export default function AnalysisPage() {
       try {
         const idStr = String(params.id);
         const createdMs = createdAtIso ? Date.parse(createdAtIso) : Date.now();
-        const ref = doc(db, 'users', u.uid, 'analyses', idStr);
-        await setDoc(ref, {
-          analysisId: Number(params.id),
-          createdAtIso: createdAtIso || new Date().toISOString(),
-          createdAtMs: isNaN(createdMs) ? Date.now() : createdMs,
-          role: role,
-          fitScore: fitScore,
-          summary: analysis.summary || null,
-          parse: parseMeta || null,
-          resume: resumeMeta || null,
-        }, { merge: true });
+        // const ref = doc(db, 'users', u.uid, 'analyses', idStr);
+        // await setDoc(ref, {
+        //   analysisId: Number(params.id),
+        //   createdAtIso: createdAtIso || new Date().toISOString(),
+        //   createdAtMs: isNaN(createdMs) ? Date.now() : createdMs,
+        //   role: role,
+        //   fitScore: fitScore,
+        //   summary: analysis.summary || null,
+        //   parse: parseMeta || null,
+        //   resume: resumeMeta || null,
+        // }, { merge: true });
       } catch (e) {
         // best effort; do not block UI
         console.error('Failed to save analysis history to Firestore:', e);

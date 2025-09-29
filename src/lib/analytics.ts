@@ -62,9 +62,9 @@ export function getAnalyticsData(): AnalyticsData {
     // Calculate average score from analysis events
     const scores = analysisEvents
       .map((e: any) => e.properties?.score)
-      .filter(score => typeof score === 'number');
+      .filter((score: any) => typeof score === 'number');
     const averageScore = scores.length > 0 
-      ? scores.reduce((a, b) => a + b, 0) / scores.length 
+      ? scores.reduce((a: number, b: number) => a + b, 0) / scores.length 
       : 0;
 
     // Get top roles

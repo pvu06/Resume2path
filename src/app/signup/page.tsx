@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Header from '@/components/Header'
 import { Mail, Lock, UserPlus, User } from 'lucide-react'
-import { auth, db } from '@/lib/firebase'
+import { auth } from '@/lib/firebase'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { doc, setDoc } from 'firebase/firestore'
+// import { doc, setDoc } from 'firebase/firestore'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -34,15 +34,15 @@ export default function SignupPage() {
         // Set display name
         await updateProfile(cred.user, { displayName: fullName })
         // Persist user profile in Firestore
-        const userRef = doc(db, 'users', cred.user.uid)
-        await setDoc(userRef, {
-          uid: cred.user.uid,
-          name: fullName,
-          email: cred.user.email,
-          photoURL: cred.user.photoURL || null,
-          createdAt: new Date().toISOString(),
-          provider: 'password'
-        }, { merge: true })
+        // const userRef = doc(db, 'users', cred.user.uid)
+        // await setDoc(userRef, {
+        //   uid: cred.user.uid,
+        //   name: fullName,
+        //   email: cred.user.email,
+        //   photoURL: cred.user.photoURL || null,
+        //   createdAt: new Date().toISOString(),
+        //   provider: 'password'
+        // }, { merge: true })
       }
       router.push('/dashboard')
     } catch (err: any) {

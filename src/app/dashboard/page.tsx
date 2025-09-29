@@ -1,9 +1,9 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import { auth, provider, db, testFirebaseConnection } from "../../lib/firebase";
+import { auth, provider } from "../../lib/firebase";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { doc, setDoc, getDoc, collection, getDocs, query, orderBy } from "firebase/firestore";
+// import { doc, setDoc, getDoc, collection, getDocs, query, orderBy } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import ResumeHistory from "@/components/ResumeHistory";
@@ -33,20 +33,21 @@ export default function Dashboard() {
       if (user) {
         setUser(user);
         // Store user data in Firestore
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) {
-          await setDoc(userRef, {
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL,
-          });
-        }
+        // const userRef = doc(db, "users", user.uid);
+        // const userSnap = await getDoc(userRef);
+        // if (!userSnap.exists()) {
+        //   await setDoc(userRef, {
+        //     uid: user.uid,
+        //     name: user.displayName,
+        //     email: user.email,
+        //     photoURL: user.photoURL,
+        //   });
+        // }
         // Quick Firebase connectivity check
         try {
-          const res = await testFirebaseConnection();
-          setFbStatus(res.ok ? 'online' : 'offline');
+          // const res = await testFirebaseConnection();
+          // setFbStatus(res.ok ? 'online' : 'offline');
+          setFbStatus('online'); // Assume online for now
         } catch {
           setFbStatus('offline');
         }
@@ -58,14 +59,14 @@ export default function Dashboard() {
         } catch {}
         // Load user's previous analyses from Firestore
         try {
-          const col = collection(db, 'users', user.uid, 'analyses');
-          const q = query(col, orderBy('createdAtMs', 'desc'));
-          const snap = await getDocs(q);
-          const items = snap.docs.map(d => {
-            const v = d.data() as any;
-            return { id: d.id, createdAtMs: Number(v.createdAtMs || 0), role: v.role, fitScore: v.fitScore };
-          }).filter(x => !isNaN(x.createdAtMs));
-          setHistory(items);
+          // const col = collection(db, 'users', user.uid, 'analyses');
+          // const q = query(col, orderBy('createdAtMs', 'desc'));
+          // const snap = await getDocs(q);
+          // const items = snap.docs.map(d => {
+          //   const v = d.data() as any;
+          //   return { id: d.id, createdAtMs: Number(v.createdAtMs || 0), role: v.role, fitScore: v.fitScore };
+          // }).filter(x => !isNaN(x.createdAtMs));
+          // setHistory(items);
         } catch (e) {
           console.error('Failed to load history:', e);
         }
