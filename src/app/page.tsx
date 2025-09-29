@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileText, User, Mail, Target, ArrowRight, Sparkles, CheckCircle, TrendingUp, Users, MessageCircle, Bot, Clock } from 'lucide-react';
+import { Upload, FileText, User, Mail, Target, ArrowRight, Sparkles, CheckCircle, TrendingUp, Users, MessageCircle, Bot, Clock, Star, Zap, Shield, Award } from 'lucide-react';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Chatbot from '@/components/Chatbot';
@@ -270,28 +270,28 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6 rounded-2xl bg-ocean-800 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-ocean-600" />
+            <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-ocean-800 to-ocean-900 hover:shadow-xl transition-all duration-300 group transform hover:scale-105 border border-ocean-700">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:from-blue-400 group-hover:to-blue-500 transition-colors">
+                <Award className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Mentorship AI</h3>
-              <p className="text-ocean-200 text-sm">Real CV transformations from experienced mentors</p>
+              <p className="text-ocean-200 text-sm">Real CV transformations from experienced mentors with proven track records</p>
             </div>
             
-            <div className="text-center p-6 rounded-2xl bg-ocean-800 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-ocean-600" />
+            <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-ocean-800 to-ocean-900 hover:shadow-xl transition-all duration-300 group transform hover:scale-105 border border-ocean-700">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:from-purple-400 group-hover:to-purple-500 transition-colors">
+                <Zap className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Smart Feedback</h3>
-              <p className="text-ocean-200 text-sm">Actionable insights, not just keywords</p>
+              <p className="text-ocean-200 text-sm">Actionable insights and specific recommendations, not just generic keywords</p>
             </div>
             
-            <div className="text-center p-6 rounded-2xl bg-ocean-800 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <ArrowRight className="w-8 h-8 text-ocean-600" />
+            <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-ocean-800 to-ocean-900 hover:shadow-xl transition-all duration-300 group transform hover:scale-105 border border-ocean-700">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:from-green-400 group-hover:to-green-500 transition-colors">
+                <TrendingUp className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Career Path</h3>
-              <p className="text-ocean-200 text-sm">Personalized roadmap for your goals</p>
+              <p className="text-ocean-200 text-sm">Personalized roadmap tailored to your specific goals and industry</p>
             </div>
           </div>
         </div>
@@ -310,43 +310,43 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-ocean-700 p-8 rounded-2xl shadow-lg border border-ocean-600">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <TrendingUp className="w-8 h-8 text-ocean-600" />
+            <div className="bg-gradient-to-br from-ocean-700 to-ocean-800 p-8 rounded-2xl shadow-xl border border-ocean-600 hover:shadow-2xl transition-all duration-300 group">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:from-blue-400 group-hover:to-blue-500 transition-colors">
+                <TrendingUp className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-white mb-4 text-center">Real-time Job Market Data</h3>
               <ul className="space-y-3 text-ocean-200">
                 <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-ocean-300 mr-3 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
                   <span>Latest industry trends and requirements</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-ocean-300 mr-3 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
                   <span>Emerging skills and technologies</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-ocean-300 mr-3 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
                   <span>Salary benchmarks and market demands</span>
                 </li>
               </ul>
             </div>
             
-            <div className="bg-ocean-700 p-8 rounded-2xl shadow-lg border border-ocean-600">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Users className="w-8 h-8 text-ocean-600" />
+            <div className="bg-gradient-to-br from-ocean-700 to-ocean-800 p-8 rounded-2xl shadow-xl border border-ocean-600 hover:shadow-2xl transition-all duration-300 group">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:from-purple-400 group-hover:to-purple-500 transition-colors">
+                <Users className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-white mb-4 text-center">Mentor Experience Integration</h3>
               <ul className="space-y-3 text-ocean-200">
                 <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-ocean-300 mr-3 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
                   <span>Continuous feedback from active mentors</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-ocean-300 mr-3 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
                   <span>Success patterns from recent placements</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="w-5 h-5 text-ocean-300 mr-3 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
                   <span>Industry-specific mentoring strategies</span>
                 </li>
               </ul>
@@ -447,6 +447,67 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
+      {/* Analytics & Monitoring Section */}
+      <section className="py-20 bg-gradient-to-b from-ocean-800 to-ocean-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-6">
+              <Shield className="w-4 h-4 text-yellow-300" />
+              <span className="text-sm font-medium text-white">Analytics & Monitoring</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Track Your Progress & Success
+            </h2>
+            <p className="text-lg text-ocean-200 max-w-3xl mx-auto">
+              Monitor your career growth with detailed analytics and personalized insights
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-br from-ocean-700 to-ocean-800 p-6 rounded-2xl border border-ocean-600 hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:from-blue-400 group-hover:to-blue-500 transition-colors">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Progress Tracking</h3>
+              <p className="text-ocean-200 text-sm">Monitor your skill development and career milestones</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-ocean-700 to-ocean-800 p-6 rounded-2xl border border-ocean-600 hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:from-green-400 group-hover:to-green-500 transition-colors">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Success Metrics</h3>
+              <p className="text-ocean-200 text-sm">Track resume improvements and interview success rates</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-ocean-700 to-ocean-800 p-6 rounded-2xl border border-ocean-600 hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:from-purple-400 group-hover:to-purple-500 transition-colors">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">AI Insights</h3>
+              <p className="text-ocean-200 text-sm">Get personalized recommendations based on your data</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-ocean-700 to-ocean-800 p-6 rounded-2xl border border-ocean-600 hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:from-orange-400 group-hover:to-orange-500 transition-colors">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Real-time Updates</h3>
+              <p className="text-ocean-200 text-sm">Stay updated with latest market trends and opportunities</p>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl inline-block shadow-lg">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-6 h-6" />
+                <span className="text-lg font-semibold">AI-Powered Analytics = Better Career Decisions</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 bg-ocean-900 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">
