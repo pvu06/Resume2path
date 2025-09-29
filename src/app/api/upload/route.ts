@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { parseFileToText } from '@/lib/parse';
 import connectDB from '@/lib/mongodb';
 import Resume from '@/models/Resume';
+import { sendAnalysisEmail, sendWelcomeEmail } from '@/lib/email';
 
 
 export async function POST(req: Request) {
@@ -74,6 +75,17 @@ export async function POST(req: Request) {
         .values({ email, name, targetRole })
         .returning();
       menteeId = m.id;
+      
+      // Send welcome email for new users
+      if (email && name) {
+        try {
+          await sendWelcomeEmail(email, name);
+          console.log('✅ Welcome email sent to new user');
+        } catch (welcomeEmailError) {
+          console.error('❌ Welcome email error (non-blocking):', welcomeEmailError);
+          // Don't fail the request if welcome email fails
+        }
+      }
     }
     
     // Insert resume
@@ -191,6 +203,23 @@ export async function POST(req: Request) {
         code: (mongoError as any)?.code || 'Unknown'
       });
       // Don't fail the request if MongoDB save fails
+    }
+
+    // Send email notification with analysis results
+    if (email && name) {
+      try {
+        await sendAnalysisEmail({
+          to: email,
+          userName: name,
+          analysisResult: finalResult,
+          fileName: file.name,
+          targetRole: targetRole || 'General'
+        });
+        console.log('✅ Analysis email sent successfully');
+      } catch (emailError) {
+        console.error('❌ Email send error (non-blocking):', emailError);
+        // Don't fail the request if email fails
+      }
     }
 
     return NextResponse.json({ 
