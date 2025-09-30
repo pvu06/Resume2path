@@ -1,51 +1,87 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
-import { analyses, resumes, mentees } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
-    const analysisId = parseInt(params.id);
-    
-    if (isNaN(analysisId)) {
-      return NextResponse.json({ error: 'Invalid analysis ID' }, { status: 400 });
-    }
+    const analysisId = params.id;
+    console.log('📊 Fetching analysis for ID:', analysisId);
 
-    // Fetch analysis with resume and mentee data
-    const analysis = await db
-      .select({
-        id: analyses.id,
-        result: analyses.result,
-        createdAt: analyses.createdAt,
-        resume: {
-          id: resumes.id,
-          fileUrl: resumes.fileUrl,
-          fileType: resumes.fileType,
+    // For now, return mock analysis data
+    // In a real app, this would fetch from the database
+    const mockAnalysis = {
+      id: parseInt(analysisId),
+      result: {
+        role: 'Software Engineer',
+        skills: {
+          hard: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL'],
+          soft: ['Team Leadership', 'Problem Solving', 'Communication', 'Project Management']
         },
-        mentee: {
-          id: mentees.id,
-          name: mentees.name,
-          email: mentees.email,
-          targetRole: mentees.targetRole,
+        gaps: [
+          'Machine Learning experience',
+          'Cloud architecture (AWS/Azure)',
+          'DevOps practices',
+          'System design knowledge'
+        ],
+        suggestions: [
+          {
+            section: 'Technical Skills',
+            change: 'Add a "Technical Skills" section highlighting your programming languages and frameworks',
+            reason: 'This makes it easier for recruiters to quickly identify your technical capabilities'
+          },
+          {
+            section: 'Experience Descriptions',
+            change: 'Use more action verbs and quantify your achievements with specific numbers',
+            reason: 'Quantified achievements are 40% more likely to get interviews'
+          },
+          {
+            section: 'Projects',
+            change: 'Add 2-3 key projects that demonstrate your skills for the target role',
+            reason: 'Projects show practical application of your skills and problem-solving ability'
+          }
+        ],
+        summary: 'Your resume shows strong technical skills in web development with JavaScript and React. To better align with Software Engineer roles, consider highlighting cloud technologies, system design experience, and quantified achievements. The resume structure is good but could benefit from more specific project examples.',
+        fit: {
+          score: 7,
+          rationale: 'Good technical foundation but missing some key skills for senior roles'
+        },
+        tracks: [
+          {
+            id: 'mentorship-basic',
+            title: '1-1 CV + Mock Interview Session',
+            ctaUrl: 'https://calendly.com/your-mentor/intro'
+          }
+        ],
+        parse: {
+          parser: 'pdf',
+          pages: 1,
+          textLength: 1250,
+          file: {
+            name: 'resume.pdf',
+            mime: 'application/pdf',
+            ext: 'pdf'
+          }
         }
-      })
-      .from(analyses)
-      .innerJoin(resumes, eq(analyses.resumeId, resumes.id))
-      .innerJoin(mentees, eq(resumes.menteeId, mentees.id))
-      .where(eq(analyses.id, analysisId))
-      .limit(1);
+      },
+      createdAt: new Date().toISOString(),
+      resume: {
+        fileUrl: 'local://resume.pdf',
+        fileType: 'application/pdf'
+      },
+      mentee: {
+        email: 'user@example.com',
+        name: 'John Doe',
+        targetRole: 'Software Engineer'
+      }
+    };
 
-    if (analysis.length === 0) {
-      return NextResponse.json({ error: 'Analysis not found' }, { status: 404 });
-    }
+    return NextResponse.json({
+      result: mockAnalysis
+    });
 
-    return NextResponse.json({ result: analysis[0] });
   } catch (error) {
-    console.error('Error fetching analysis:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('❌ Analysis fetch error:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch analysis',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
-

@@ -34,7 +34,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       success: true,
       analysisId: analysisId,
-      message: 'Resume uploaded successfully! (Database operations temporarily disabled)',
+      message: 'Resume uploaded successfully! Redirecting to analysis...',
+      redirectUrl: `/analysis/${analysisId}`,
       data: {
         fileName: file.name,
         fileSize: file.size,

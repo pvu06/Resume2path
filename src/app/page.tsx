@@ -56,8 +56,11 @@ export default function HomePage() {
       if (response.ok) {
         const result = await response.json();
         console.log('📤 Upload success:', result);
-        alert(`Upload successful! Analysis ID: ${result.analysisId}`);
-        // router.push(`/analysis/${result.analysisId}`);
+        if (result.redirectUrl) {
+          router.push(result.redirectUrl);
+        } else {
+          alert(`Upload successful! Analysis ID: ${result.analysisId}`);
+        }
       } else {
         const errorData = await response.json();
         console.error('📤 Upload failed:', errorData);
