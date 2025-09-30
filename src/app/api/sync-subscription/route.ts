@@ -46,16 +46,16 @@ export async function POST(req: NextRequest) {
       stripeCustomerId: customer.id,
       stripeSubscriptionId: subscription.id,
       status: subscription.status,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: String(subscription.cancel_at_period_end),
+      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+      cancelAtPeriodEnd: String((subscription as any).cancel_at_period_end),
     }).onConflictDoUpdate({
       target: subscriptions.userId,
       set: {
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
         status: subscription.status,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        cancelAtPeriodEnd: String(subscription.cancel_at_period_end),
+        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+        cancelAtPeriodEnd: String((subscription as any).cancel_at_period_end),
         updatedAt: new Date(),
       },
     });

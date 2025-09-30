@@ -49,16 +49,16 @@ export async function POST(req: NextRequest) {
               stripeCustomerId: session.customer as string,
               stripeSubscriptionId: subscription.id,
               status: subscription.status,
-              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-              cancelAtPeriodEnd: String(subscription.cancel_at_period_end),
+              currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+              cancelAtPeriodEnd: String((subscription as any).cancel_at_period_end),
             }).onConflictDoUpdate({
               target: subscriptions.userId,
               set: {
                 stripeCustomerId: session.customer as string,
                 stripeSubscriptionId: subscription.id,
                 status: subscription.status,
-                currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-                cancelAtPeriodEnd: String(subscription.cancel_at_period_end),
+                currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+                cancelAtPeriodEnd: String((subscription as any).cancel_at_period_end),
                 updatedAt: new Date(),
               },
             });
@@ -81,16 +81,16 @@ export async function POST(req: NextRequest) {
             stripeCustomerId: newSubscription.customer as string,
             stripeSubscriptionId: newSubscription.id,
             status: newSubscription.status,
-            currentPeriodEnd: new Date(newSubscription.current_period_end * 1000),
-            cancelAtPeriodEnd: String(newSubscription.cancel_at_period_end),
+            currentPeriodEnd: new Date((newSubscription as any).current_period_end * 1000),
+            cancelAtPeriodEnd: String((newSubscription as any).cancel_at_period_end),
           }).onConflictDoUpdate({
             target: subscriptions.userId,
             set: {
               stripeCustomerId: newSubscription.customer as string,
               stripeSubscriptionId: newSubscription.id,
               status: newSubscription.status,
-              currentPeriodEnd: new Date(newSubscription.current_period_end * 1000),
-              cancelAtPeriodEnd: String(newSubscription.cancel_at_period_end),
+              currentPeriodEnd: new Date((newSubscription as any).current_period_end * 1000),
+              cancelAtPeriodEnd: String((newSubscription as any).cancel_at_period_end),
               updatedAt: new Date(),
             },
           });
@@ -112,8 +112,8 @@ export async function POST(req: NextRequest) {
             .update(subscriptions)
             .set({
               status: updatedSubscription.status,
-              currentPeriodEnd: new Date(updatedSubscription.current_period_end * 1000),
-              cancelAtPeriodEnd: String(updatedSubscription.cancel_at_period_end),
+              currentPeriodEnd: new Date((updatedSubscription as any).current_period_end * 1000),
+              cancelAtPeriodEnd: String((updatedSubscription as any).cancel_at_period_end),
               updatedAt: new Date(),
             })
             .where(eq(subscriptions.stripeSubscriptionId, updatedSubscription.id));
