@@ -18,6 +18,7 @@ export async function POST(req: Request) {
       name,
       targetRole
     });
+    console.log('📤 Target role received:', targetRole, 'Type:', typeof targetRole);
     
     if (!file || !email) {
       return NextResponse.json({ error: 'Missing file or email' }, { status: 400 });

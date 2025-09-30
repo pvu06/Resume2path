@@ -46,6 +46,14 @@ export default function HomePage() {
 
     try {
       console.log('📤 Starting upload...');
+      console.log('📤 Form data:', { 
+        email: formData.email, 
+        name: formData.name, 
+        targetRole: formData.targetRole,
+        isCustomRole,
+        customRole,
+        finalRole
+      });
       const response = await fetch('/api/working-upload', {
         method: 'POST',
         body: data,
