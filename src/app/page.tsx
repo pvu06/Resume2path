@@ -46,7 +46,7 @@ export default function HomePage() {
 
     try {
       console.log('📤 Starting upload...');
-      const response = await fetch('/api/simple-upload', {
+      const response = await fetch('/api/working-upload', {
         method: 'POST',
         body: data,
       });
