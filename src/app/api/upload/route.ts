@@ -15,88 +15,146 @@ import { queueResumeAnalysis, queueWelcomeEmail } from '@/lib/queue';
 
 export async function POST(req: Request) {
   try {
-  const reqUrl = new URL(req.url);
-  const debug = reqUrl.searchParams.get('debug') === '1';
+    console.log('📤 Upload API called');
+    
+    const reqUrl = new URL(req.url);
+    const debug = reqUrl.searchParams.get('debug') === '1';
     const form = await req.formData();
     const file = form.get('file') as File;
     const email = String(form.get('email')||'');
     const name = String(form.get('name')||'');
-  const targetRole = String(form.get('targetRole')||'');
-  const jobDescription = String(form.get('jobDescription')||'');
+    const targetRole = String(form.get('targetRole')||'');
+    const jobDescription = String(form.get('jobDescription')||'');
+    
+    console.log('📤 Upload data:', { 
+      fileName: file?.name, 
+      fileSize: file?.size, 
+      fileType: file?.type,
+      email, 
+      name, 
+      targetRole 
+    });
     
     if (!file || !email) {
+      console.log('❌ Missing file or email');
       return NextResponse.json({ error: 'Missing file or email' }, { status: 400 });
     }
 
     // Check subscription and usage limits
-    const subscriptionResponse = await fetch(`${new URL(req.url).origin}/api/subscription?email=${encodeURIComponent(email)}`);
-    if (subscriptionResponse.ok) {
-      const { subscription, usage: usageData } = await subscriptionResponse.json();
-      
-      // Check if user has reached their limit
-      if (subscription.status !== 'premium' && usageData.analysesCount >= usageData.limit) {
-        return NextResponse.json({ 
-          error: 'Monthly limit reached. Upgrade to Premium for unlimited analyses.',
-          upgradeRequired: true,
-          currentUsage: usageData.analysesCount,
-          limit: usageData.limit
-        }, { status: 403 });
+    try {
+      console.log('🔍 Checking subscription for:', email);
+      const subscriptionResponse = await fetch(`${new URL(req.url).origin}/api/subscription?email=${encodeURIComponent(email)}`);
+      if (subscriptionResponse.ok) {
+        const { subscription, usage: usageData } = await subscriptionResponse.json();
+        console.log('✅ Subscription check result:', { subscription: subscription.status, usage: usageData.analysesCount });
+        
+        // Check if user has reached their limit
+        if (subscription.status !== 'premium' && usageData.analysesCount >= usageData.limit) {
+          console.log('❌ Usage limit reached');
+          return NextResponse.json({ 
+            error: 'Monthly limit reached. Upgrade to Premium for unlimited analyses.',
+            upgradeRequired: true,
+            currentUsage: usageData.analysesCount,
+            limit: usageData.limit
+          }, { status: 403 });
+        }
+      } else {
+        console.log('⚠️ Subscription check failed, continuing anyway');
       }
+    } catch (subscriptionError) {
+      console.error('❌ Subscription check error (non-blocking):', subscriptionError);
+      // Continue without failing the upload
     }
 
     // Upload to Vercel Blob (graceful fallback in local/dev without token)
     let url: string;
     try {
+      console.log('☁️ Uploading to Vercel Blob...');
       const uploaded = await put(`cv/${crypto.randomUUID()}-${file.name}`, file, { access: 'public' });
       url = uploaded.url;
+      console.log('✅ Blob upload successful:', url);
     } catch (e) {
-      console.error('Blob upload failed, using local placeholder URL:', e);
+      console.error('❌ Blob upload failed, using local placeholder URL:', e);
       url = `local://${crypto.randomUUID()}-${file.name}`;
     }
     
-  // Parse file to text (shared util)
-  const parseRes = await parseFileToText(file);
-  const text = parseRes.text || '';
-  const textLen = text.length;
-  console.log('[upload] extracted text length:', textLen, 'mime:', file.type, 'name:', file.name, 'parser:', parseRes.parser);
+    // Parse file to text (shared util)
+    let parseRes: any;
+    let text = '';
+    let textLen = 0;
+    try {
+      console.log('📄 Parsing file to text...');
+      parseRes = await parseFileToText(file);
+      text = parseRes.text || '';
+      textLen = text.length;
+      console.log('✅ File parsed successfully:', { textLen, mime: file.type, name: file.name, parser: parseRes.parser });
+    } catch (parseError) {
+      console.error('❌ File parsing failed:', parseError);
+      parseRes = { parser: 'error', pages: 0, error: parseError instanceof Error ? parseError.message : 'Unknown error' };
+      text = '';
+      textLen = 0;
+    }
 
     // Upsert mentee by email and ensure targetRole is saved/updated
-    const existing = (await db.select().from(mentees).where(eq(mentees.email, email)).limit(1));
     let menteeId: number;
-    if (existing.length > 0) {
-      menteeId = existing[0].id;
-      // Update name and targetRole if provided
-      await db
-        .update(mentees)
-        .set({
-          name: name || existing[0].name || null as any,
-          targetRole: targetRole || existing[0].targetRole || null as any,
-        })
-        .where(eq(mentees.id, menteeId));
-    } else {
-      const [m] = await db
-        .insert(mentees)
-        .values({ email, name, targetRole })
-        .returning();
-      menteeId = m.id;
-      
-            // Queue welcome email for new users
-            if (email && name) {
-              try {
-                await queueWelcomeEmail(email, name);
-                console.log('✅ Welcome email queued for new user');
-              } catch (welcomeEmailError) {
-                console.error('❌ Welcome email queue error (non-blocking):', welcomeEmailError);
-                // Don't fail the request if welcome email fails
-              }
-            }
-      
-      // Track user registration
-      analytics.trackUserRegistration(email);
+    try {
+      console.log('👤 Upserting mentee...');
+      const existing = (await db.select().from(mentees).where(eq(mentees.email, email)).limit(1));
+      if (existing.length > 0) {
+        menteeId = existing[0].id;
+        console.log('✅ Found existing mentee:', menteeId);
+        // Update name and targetRole if provided
+        await db
+          .update(mentees)
+          .set({
+            name: name || existing[0].name || null as any,
+            targetRole: targetRole || existing[0].targetRole || null as any,
+          })
+          .where(eq(mentees.id, menteeId));
+      } else {
+        const [m] = await db
+          .insert(mentees)
+          .values({ email, name, targetRole })
+          .returning();
+        menteeId = m.id;
+        console.log('✅ Created new mentee:', menteeId);
+        
+        // Queue welcome email for new users
+        if (email && name) {
+          try {
+            await queueWelcomeEmail(email, name);
+            console.log('✅ Welcome email queued for new user');
+          } catch (welcomeEmailError) {
+            console.error('❌ Welcome email queue error (non-blocking):', welcomeEmailError);
+            // Don't fail the request if welcome email fails
+          }
+        }
+        
+        // Track user registration
+        analytics.trackUserRegistration(email);
+      }
+    } catch (dbError) {
+      console.error('❌ Database error (mentee upsert):', dbError);
+      return NextResponse.json({ 
+        error: 'Database error during user creation',
+        details: dbError instanceof Error ? dbError.message : 'Unknown error'
+      }, { status: 500 });
     }
     
     // Insert resume
-    const [r] = await db.insert(resumes).values({ menteeId, fileUrl: url, fileType: file.type, textContent: text }).returning();
+    let resumeId: number;
+    try {
+      console.log('📄 Inserting resume...');
+      const [r] = await db.insert(resumes).values({ menteeId, fileUrl: url, fileType: file.type, textContent: text }).returning();
+      resumeId = r.id;
+      console.log('✅ Resume inserted successfully:', resumeId);
+    } catch (dbError) {
+      console.error('❌ Database error (resume insert):', dbError);
+      return NextResponse.json({ 
+        error: 'Database error during resume creation',
+        details: dbError instanceof Error ? dbError.message : 'Unknown error'
+      }, { status: 500 });
+    }
     
     // Track resume upload
     analytics.trackResumeUpload(targetRole || 'General', email);
@@ -114,7 +172,7 @@ export async function POST(req: Request) {
     // Try to queue analysis, but don't fail if it doesn't work
     try {
       const analysisJob = await queueResumeAnalysis({
-        resumeId: r.id,
+        resumeId: resumeId,
         fileUrl: url,
         textContent: text,
         targetRole: targetRole || 'General',
@@ -163,10 +221,20 @@ export async function POST(req: Request) {
     };
 
     // Insert analysis regardless (so users aren't blocked on AI hiccups)
-    const [a] = await db.insert(analyses).values({ 
-      resumeId: r.id, 
-      result: normalized
-    }).returning();
+    let analysisId: number;
+    try {
+      console.log('📊 Inserting analysis...');
+      const [a] = await db.insert(analyses).values({ 
+        resumeId: resumeId, 
+        result: normalized
+      }).returning();
+      analysisId = a.id;
+      console.log('✅ Analysis inserted successfully:', analysisId);
+    } catch (dbError) {
+      console.error('❌ Database error (analysis insert):', dbError);
+      // Don't fail the request if analysis insert fails
+      analysisId = 0;
+    }
     
     // Track analysis completion
     const analysisScore = normalized?.fit?.score || 0;
@@ -268,8 +336,11 @@ export async function POST(req: Request) {
       }
     }
 
+    console.log('🎉 Upload completed successfully!');
     return NextResponse.json({ 
-      analysisId: a.id,
+      success: true,
+      analysisId: analysisId,
+      message: 'Resume uploaded and analysis started successfully!',
       ...(debug ? { textLength: text.length, fileType: file.type, fileName: file.name } : {})
     });
   } catch (error) {
