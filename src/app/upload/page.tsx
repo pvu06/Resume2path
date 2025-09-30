@@ -31,7 +31,7 @@ export default function UploadPage() {
 
     try {
       console.log('📤 Starting upload...');
-      const response = await fetch('/api/minimal-upload', {
+      const response = await fetch('/api/simple-upload', {
         method: 'POST',
         body: data,
       });
