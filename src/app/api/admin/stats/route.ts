@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { users, subscriptions, analyses } from '@/db/schema';
+import { mentees, subscriptions, analyses } from '@/db/schema';
 import { eq, gte, sql } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    // Get total users
+    // Get total users (using mentees table)
     const totalUsersResult = await db
       .select({ count: sql<number>`count(*)` })
-      .from(users);
+      .from(mentees);
     const totalUsers = totalUsersResult[0]?.count || 0;
 
     // Get premium users

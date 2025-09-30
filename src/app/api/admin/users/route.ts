@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { users, subscriptions, analyses, resumes } from '@/db/schema';
+import { mentees, subscriptions, analyses, resumes } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 
 export async function GET() {
@@ -8,19 +8,18 @@ export async function GET() {
     // Get users with their subscription status and analysis count
     const usersWithStats = await db
       .select({
-        id: users.id,
-        email: users.email,
-        name: users.name,
-        createdAt: users.createdAt,
-        lastLoginAt: users.lastLoginAt,
+        id: mentees.id,
+        email: mentees.email,
+        name: mentees.name,
+        createdAt: mentees.createdAt,
         subscriptionStatus: subscriptions.status,
         analysesCount: sql<number>`count(${analyses.id})`
       })
-      .from(users)
-      .leftJoin(subscriptions, eq(users.email, subscriptions.userId))
-      .leftJoin(resumes, eq(users.email, resumes.menteeId))
+      .from(mentees)
+      .leftJoin(subscriptions, eq(mentees.email, subscriptions.userId))
+      .leftJoin(resumes, eq(mentees.id, resumes.menteeId))
       .leftJoin(analyses, eq(resumes.id, analyses.resumeId))
-      .groupBy(users.id, users.email, users.name, users.createdAt, users.lastLoginAt, subscriptions.status);
+      .groupBy(mentees.id, mentees.email, mentees.name, mentees.createdAt, subscriptions.status);
 
     // Format the data
     const formattedUsers = usersWithStats.map((user: any) => ({
@@ -29,7 +28,7 @@ export async function GET() {
       name: user.name || 'No name',
       subscription: user.subscriptionStatus || 'free',
       analysesCount: user.analysesCount || 0,
-      lastActive: user.lastLoginAt?.toISOString() || user.createdAt?.toISOString() || '',
+      lastActive: user.createdAt?.toISOString() || '',
       createdAt: user.createdAt?.toISOString() || ''
     }));
 

@@ -102,26 +102,30 @@ export async function POST(req: Request) {
     analytics.trackResumeUpload(targetRole || 'General', email);
 
     // Use Gemini AI for analysis (graceful fallback if it fails)
-    // Queue resume analysis for background processing
-    const analysisJob = await queueResumeAnalysis({
-      resumeId: r.id,
-      fileUrl: url,
-      textContent: text,
-      targetRole: targetRole || 'General',
-      email: email,
-      name: name || 'User'
-    });
-
-    // For now, return a placeholder result
-    // The actual analysis will be processed in the background
     let finalResult: any = {
-      summary: "Analysis in progress... You'll receive an email when complete.",
+      summary: "AI analysis is temporarily unavailable. Here is a basic receipt of your upload. Try again shortly.",
       skills: [],
       gaps: [],
       suggestions: [],
-      fit: { score: 0, rationale: "Analysis pending" },
+      fit: { score: 7, rationale: "Analysis pending" },
       tracks: []
     };
+
+    // Try to queue analysis, but don't fail if it doesn't work
+    try {
+      const analysisJob = await queueResumeAnalysis({
+        resumeId: r.id,
+        fileUrl: url,
+        textContent: text,
+        targetRole: targetRole || 'General',
+        email: email,
+        name: name || 'User'
+      });
+      console.log('✅ Analysis queued successfully');
+    } catch (queueError) {
+      console.error('❌ Queue error (non-blocking):', queueError);
+      // Continue without failing the upload
+    }
 
     // Normalize or fallback
     const normalized = finalResult ? {

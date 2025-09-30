@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,16 +10,59 @@ import { PRICING_PLANS } from '@/lib/stripe';
 
 export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [subscriptionStatus, setSubscriptionStatus] = useState('free');
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+
+  // Check subscription status on component mount
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      try {
+        // Get email from localStorage or prompt user
+        let email = localStorage.getItem('userEmail');
+        if (!email) {
+          email = prompt('Please enter your email to check subscription status:');
+          if (email) {
+            localStorage.setItem('userEmail', email);
+            setUserEmail(email);
+          }
+        } else {
+          setUserEmail(email);
+        }
+
+        if (email) {
+          const response = await fetch(`/api/subscription?email=${encodeURIComponent(email)}`);
+          if (response.ok) {
+            const data = await response.json();
+            setSubscriptionStatus(data.subscription.status);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking subscription status:', error);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+
+    checkSubscriptionStatus();
+  }, []);
 
   const handleUpgrade = async () => {
+    if (!userEmail) {
+      const email = prompt('Please enter your email to upgrade:');
+      if (!email) return;
+      setUserEmail(email);
+      localStorage.setItem('userEmail', email);
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: 'user@example.com', // In real app, get from auth
-          userId: 'user123'
+          email: userEmail,
+          userId: userEmail
         })
       });
 
@@ -81,7 +124,7 @@ export default function PricingPage() {
                   className="w-full bg-ocean-600 hover:bg-ocean-700 text-white"
                   disabled
                 >
-                  Current Plan
+                  {isCheckingStatus ? 'Checking...' : subscriptionStatus === 'free' ? 'Current Plan' : 'Downgrade'}
                 </Button>
               </CardContent>
             </Card>
@@ -117,12 +160,18 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <Button 
-                  onClick={handleUpgrade}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-semibold py-3 text-lg transition-all duration-300 transform hover:scale-105"
+                  onClick={subscriptionStatus === 'premium' ? undefined : handleUpgrade}
+                  disabled={isLoading || subscriptionStatus === 'premium'}
+                  className={`w-full font-semibold py-3 text-lg transition-all duration-300 transform hover:scale-105 ${
+                    subscriptionStatus === 'premium' 
+                      ? 'bg-green-600 hover:bg-green-700 text-white' 
+                      : 'bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black'
+                  }`}
                 >
-                  {isLoading ? 'Processing...' : 'Upgrade to Premium'}
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  {isLoading ? 'Processing...' : 
+                   isCheckingStatus ? 'Checking...' :
+                   subscriptionStatus === 'premium' ? '✓ Premium Active' : 'Upgrade to Premium'}
+                  {subscriptionStatus !== 'premium' && <ArrowRight className="ml-2 w-5 h-5" />}
                 </Button>
               </CardContent>
             </Card>

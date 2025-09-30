@@ -50,3 +50,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to sync subscription' }, { status: 500 });
   }
 }
+
