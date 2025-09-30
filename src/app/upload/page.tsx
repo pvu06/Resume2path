@@ -30,20 +30,27 @@ export default function UploadPage() {
     data.append('targetRole', formData.targetRole);
 
     try {
-      const response = await fetch('/api/upload', {
+      console.log('📤 Starting upload...');
+      const response = await fetch('/api/minimal-upload', {
         method: 'POST',
         body: data,
       });
 
+      console.log('📤 Upload response status:', response.status);
+      
       if (response.ok) {
-        const { analysisId } = await response.json();
-        router.push(`/analysis/${analysisId}`);
+        const result = await response.json();
+        console.log('📤 Upload success:', result);
+        alert(`Upload successful! Analysis ID: ${result.analysisId}`);
+        // router.push(`/analysis/${result.analysisId}`);
       } else {
-        alert('Upload failed. Please try again.');
+        const errorData = await response.json();
+        console.error('📤 Upload failed:', errorData);
+        alert(`Upload failed: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Upload failed. Please try again.');
+      console.error('📤 Upload error:', error);
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
