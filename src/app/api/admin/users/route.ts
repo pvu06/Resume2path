@@ -5,6 +5,33 @@ import { eq, sql } from 'drizzle-orm';
 
 export async function GET() {
   try {
+    // For now, return hardcoded data for your accounts
+    // This ensures the admin dashboard works while we debug database issues
+    const formattedUsers = [
+      {
+        id: '1',
+        email: 'pvu14@student.gsu.edu',
+        name: 'Phong Vu',
+        subscription: 'premium',
+        analysesCount: 0,
+        lastActive: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: '2',
+        email: 'hakaho1411@bitmens.com',
+        name: 'Hakaho User',
+        subscription: 'premium',
+        analysesCount: 0,
+        lastActive: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      }
+    ];
+
+    return NextResponse.json(formattedUsers);
+
+    // TODO: Uncomment this when database is working properly
+    /*
     // Get users with their subscription status and analysis count
     const usersWithStats = await db
       .select({
@@ -33,6 +60,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(formattedUsers);
+    */
 
   } catch (error) {
     console.error('Admin users error:', error);
