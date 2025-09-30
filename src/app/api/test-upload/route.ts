@@ -30,11 +30,11 @@ export async function POST(req: Request) {
       success: true,
       message: 'Test upload successful!',
       fileInfo: {
-        name: file.name,
+        fileName: file.name,
         size: file.size,
         type: file.type,
         email,
-        name: name || 'No name provided'
+        userName: name || 'No name provided'
       }
     });
 
