@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       success: true,
       analysisId: analysisId,
       message: 'Resume uploaded successfully! Redirecting to analysis...',
-      redirectUrl: `/analysis/${analysisId}`,
+      redirectUrl: `/analysis/${analysisId}?role=${encodeURIComponent(targetRole || 'General')}`,
       data: {
         fileName: file.name,
         fileSize: file.size,

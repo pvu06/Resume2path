@@ -1,26 +1,53 @@
 import { NextResponse } from 'next/server';
 
+// Helper functions to get role-specific skills and gaps
+function getSkillsForRole(role: string) {
+  const roleSkills: Record<string, string[]> = {
+    'Backend Developer': ['Java', 'Python', 'Node.js', 'SQL', 'REST APIs', 'Microservices'],
+    'Frontend Developer': ['JavaScript', 'React', 'Vue.js', 'HTML/CSS', 'TypeScript', 'Webpack'],
+    'Data Scientist': ['Python', 'R', 'SQL', 'Machine Learning', 'Statistics', 'Pandas'],
+    'Data Analyst': ['SQL', 'Excel', 'Python', 'Tableau', 'Power BI', 'Statistics'],
+    'Product Manager': ['Agile', 'Scrum', 'User Research', 'Analytics', 'Roadmapping', 'Stakeholder Management'],
+    'Consulting': ['Strategy', 'Problem Solving', 'Client Management', 'Presentation', 'Analytics', 'Business Acumen']
+  };
+  
+  return {
+    hard: roleSkills[role] || ['JavaScript', 'Python', 'SQL', 'Problem Solving', 'Communication']
+  };
+}
+
+function getGapsForRole(role: string) {
+  const roleGaps: Record<string, string[]> = {
+    'Backend Developer': ['Cloud platforms (AWS/Azure)', 'Containerization (Docker)', 'CI/CD pipelines', 'System design'],
+    'Frontend Developer': ['Testing frameworks (Jest/Cypress)', 'Performance optimization', 'Accessibility', 'Mobile development'],
+    'Data Scientist': ['Deep Learning', 'Big Data tools (Spark)', 'Cloud ML platforms', 'Advanced statistics'],
+    'Data Analyst': ['Advanced SQL', 'Machine Learning basics', 'Data visualization tools', 'Business intelligence'],
+    'Product Manager': ['Technical background', 'User experience design', 'Data analysis', 'Market research'],
+    'Consulting': ['Industry expertise', 'Quantitative analysis', 'Client presentation', 'Project management']
+  };
+  
+  return roleGaps[role] || ['Industry-specific knowledge', 'Advanced technical skills', 'Leadership experience'];
+}
+
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
     const analysisId = params.id;
-    console.log('📊 Fetching analysis for ID:', analysisId);
+    const url = new URL(req.url);
+    const targetRole = url.searchParams.get('role') || 'General';
+    
+    console.log('📊 Fetching analysis for ID:', analysisId, 'Target role:', targetRole);
 
     // For now, return mock analysis data
     // In a real app, this would fetch from the database
     const mockAnalysis = {
       id: parseInt(analysisId),
       result: {
-        role: 'Software Engineer',
+        role: targetRole,
         skills: {
-          hard: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL'],
+          hard: getSkillsForRole(targetRole).hard,
           soft: ['Team Leadership', 'Problem Solving', 'Communication', 'Project Management']
         },
-        gaps: [
-          'Machine Learning experience',
-          'Cloud architecture (AWS/Azure)',
-          'DevOps practices',
-          'System design knowledge'
-        ],
+        gaps: getGapsForRole(targetRole),
         suggestions: [
           {
             section: 'Technical Skills',
@@ -69,7 +96,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       mentee: {
         email: 'user@example.com',
         name: 'John Doe',
-        targetRole: 'Software Engineer'
+        targetRole: targetRole
       }
     };
 
