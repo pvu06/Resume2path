@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?cancelled=true`,
+      success_url: `https://resume2path.vercel.app/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://resume2path.vercel.app/pricing?cancelled=true`,
       metadata: {
         userId: userId || email,
         email: email
