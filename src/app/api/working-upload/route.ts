@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { analytics } from '@/lib/analytics';
 
 export async function POST(req: Request) {
   try {
@@ -30,6 +31,10 @@ export async function POST(req: Request) {
 
     // Generate a fake analysis ID for now
     const analysisId = Math.floor(Math.random() * 10000) + 1000;
+    
+    // Track analytics
+    analytics.trackResumeUpload(targetRole || 'General', email);
+    analytics.trackAnalysisComplete(7, targetRole || 'General', email);
     
     console.log('🎉 Upload completed successfully!');
     return NextResponse.json({ 
