@@ -214,3 +214,4 @@ export async function closeQueues() {
   await analysisQueue.close();
   await emailQueue.close();
 }
+

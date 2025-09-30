@@ -91,13 +91,13 @@ export default function PDFAnnotator({
     
     setCurrentAnnotation(prev => prev ? {
       ...prev,
-      width: Math.abs(x - prev.x),
-      height: Math.abs(y - prev.y)
+      width: Math.abs(x - (prev.x || 0)),
+      height: Math.abs(y - (prev.y || 0))
     } : null);
   };
 
   const handleMouseUp = () => {
-    if (currentAnnotation && currentAnnotation.width > 10 && currentAnnotation.height > 10) {
+    if (currentAnnotation && (currentAnnotation.width || 0) > 10 && (currentAnnotation.height || 0) > 10) {
       const annotation: Annotation = {
         ...currentAnnotation,
         text: 'Click to add comment...',
@@ -110,7 +110,7 @@ export default function PDFAnnotator({
     setCurrentAnnotation(null);
   };
 
-  const addSuggestion = (type: 'suggestion' | 'error', text: string) => {
+  const addSuggestion = (type: 'suggestion' | 'error' | 'highlight', text: string) => {
     const annotation: Annotation = {
       id: Date.now().toString(),
       type,
@@ -279,10 +279,10 @@ export default function PDFAnnotator({
                   <div
                     className="absolute border-2 border-blue-500 border-dashed rounded bg-blue-100/20"
                     style={{
-                      left: currentAnnotation.x * scale,
-                      top: currentAnnotation.y * scale,
-                      width: currentAnnotation.width * scale,
-                      height: currentAnnotation.height * scale,
+                      left: (currentAnnotation.x || 0) * scale,
+                      top: (currentAnnotation.y || 0) * scale,
+                      width: (currentAnnotation.width || 0) * scale,
+                      height: (currentAnnotation.height || 0) * scale,
                     }}
                   />
                 )}
