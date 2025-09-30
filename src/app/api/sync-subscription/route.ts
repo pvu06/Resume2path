@@ -10,35 +10,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
     }
 
-    const { email } = await req.json();
+    const { email, subscriptionId, customerId } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Get all customers with this email
-    const customers = await stripe.customers.list({
-      email: email,
-      limit: 1
-    });
+    let customer;
+    let subscription;
 
-    if (customers.data.length === 0) {
-      return NextResponse.json({ error: 'No customer found with this email' }, { status: 404 });
+    // If subscriptionId and customerId are provided, use them directly
+    if (subscriptionId && customerId) {
+      customer = await stripe.customers.retrieve(customerId);
+      subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    } else {
+      // Otherwise, look up by email
+      const customers = await stripe.customers.list({
+        email: email,
+        limit: 1
+      });
+
+      if (customers.data.length === 0) {
+        return NextResponse.json({ error: 'No customer found with this email' }, { status: 404 });
+      }
+
+      customer = customers.data[0];
+
+      // Get all subscriptions for this customer
+      const stripeSubscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: 'all'
+      });
+
+      if (stripeSubscriptions.data.length === 0) {
+        return NextResponse.json({ error: 'No subscriptions found for this customer' }, { status: 404 });
+      }
+
+      subscription = stripeSubscriptions.data[0];
     }
-
-    const customer = customers.data[0];
-
-    // Get all subscriptions for this customer
-    const stripeSubscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'all'
-    });
-
-    if (stripeSubscriptions.data.length === 0) {
-      return NextResponse.json({ error: 'No subscriptions found for this customer' }, { status: 404 });
-    }
-
-    const subscription = stripeSubscriptions.data[0];
 
     // Save to database
     await db.insert(subscriptions).values({
