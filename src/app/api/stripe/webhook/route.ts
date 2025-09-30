@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { headers } from 'next/headers';
+import { db } from '@/db';
+import { subscriptions } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   if (!stripe) {
@@ -32,23 +35,111 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.completed':
         const session = event.data.object;
         console.log('✅ Checkout session completed:', session.id);
-        // Here you would update your database with the subscription
-        // For now, we'll just log it
+        
+        if (session.subscription && session.customer) {
+          // Get the subscription details
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+          const customer = await stripe.customers.retrieve(session.customer as string);
+          const email = (customer as any).email;
+          
+          if (email) {
+            // Save subscription to database
+            await db.insert(subscriptions).values({
+              userId: email,
+              stripeCustomerId: session.customer as string,
+              stripeSubscriptionId: subscription.id,
+              status: subscription.status,
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              cancelAtPeriodEnd: String(subscription.cancel_at_period_end),
+            }).onConflictDoUpdate({
+              target: subscriptions.userId,
+              set: {
+                stripeCustomerId: session.customer as string,
+                stripeSubscriptionId: subscription.id,
+                status: subscription.status,
+                currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+                cancelAtPeriodEnd: String(subscription.cancel_at_period_end),
+                updatedAt: new Date(),
+              },
+            });
+            console.log(`✅ Subscription saved for user: ${email}`);
+          }
+        }
         break;
 
       case 'customer.subscription.created':
-        const subscription = event.data.object;
-        console.log('✅ Subscription created:', subscription.id);
+        const newSubscription = event.data.object;
+        console.log('✅ Subscription created:', newSubscription.id);
+        
+        // Get customer email
+        const customer = await stripe.customers.retrieve(newSubscription.customer as string);
+        const email = (customer as any).email;
+        
+        if (email) {
+          await db.insert(subscriptions).values({
+            userId: email,
+            stripeCustomerId: newSubscription.customer as string,
+            stripeSubscriptionId: newSubscription.id,
+            status: newSubscription.status,
+            currentPeriodEnd: new Date(newSubscription.current_period_end * 1000),
+            cancelAtPeriodEnd: String(newSubscription.cancel_at_period_end),
+          }).onConflictDoUpdate({
+            target: subscriptions.userId,
+            set: {
+              stripeCustomerId: newSubscription.customer as string,
+              stripeSubscriptionId: newSubscription.id,
+              status: newSubscription.status,
+              currentPeriodEnd: new Date(newSubscription.current_period_end * 1000),
+              cancelAtPeriodEnd: String(newSubscription.cancel_at_period_end),
+              updatedAt: new Date(),
+            },
+          });
+          console.log(`✅ Subscription created for user: ${email}`);
+        }
         break;
 
       case 'customer.subscription.updated':
         const updatedSubscription = event.data.object;
         console.log('✅ Subscription updated:', updatedSubscription.id);
+        
+        // Update subscription in database
+        const existingSub = await db.query.subscriptions.findFirst({
+          where: eq(subscriptions.stripeSubscriptionId, updatedSubscription.id),
+        });
+        
+        if (existingSub) {
+          await db
+            .update(subscriptions)
+            .set({
+              status: updatedSubscription.status,
+              currentPeriodEnd: new Date(updatedSubscription.current_period_end * 1000),
+              cancelAtPeriodEnd: String(updatedSubscription.cancel_at_period_end),
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptions.stripeSubscriptionId, updatedSubscription.id));
+          console.log(`✅ Subscription updated for: ${existingSub.userId}`);
+        }
         break;
 
       case 'customer.subscription.deleted':
         const deletedSubscription = event.data.object;
         console.log('✅ Subscription cancelled:', deletedSubscription.id);
+        
+        // Update subscription status to cancelled
+        const cancelledSub = await db.query.subscriptions.findFirst({
+          where: eq(subscriptions.stripeSubscriptionId, deletedSubscription.id),
+        });
+        
+        if (cancelledSub) {
+          await db
+            .update(subscriptions)
+            .set({
+              status: 'cancelled',
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptions.stripeSubscriptionId, deletedSubscription.id));
+          console.log(`✅ Subscription cancelled for: ${cancelledSub.userId}`);
+        }
         break;
 
       case 'invoice.payment_succeeded':
